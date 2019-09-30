@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Page Title</title>
+  </head>
+  <body>
+    <h1>fabricjs</h1>
+    <canvas
+      id="c"
+      width="600"
+      height="500"
+      class="lower-canvas"
+      style="position: absolute; width: 600px; height: 500px; left: 0px; top: 0px; touch-action: none; user-select: none;"
+    ></canvas>
+    <script type="text/javascript" src="js/fabricjs/fabric.min.js"></script>
+    <script type="text/javascript" src="js/fabricjs/sprite.class.js"></script>
+    <script
+      type="text/javascript"
+      src="js/fabricjs/custom/fabric-object.js"
+    ></script>
+    <script>
+      (function() {
+        var canvas = (this.__canvas = new fabric.Canvas("c"));
+        fabric.Object.prototype.originX = fabric.Object.prototype.originY =
+          "center";
+        fabric.Object.prototype.transparentCorners = false;
+
+        fabric.Sprite.fromURL("/img/child.png", createSprite(2, 2));
+
+        function createSprite(i, j) {
+          return function(sprite) {
+            sprite.set({
+              left: i * 100 + 50,
+              top: j * 100 + 50,
+              angle: 0
+            });
+            canvas.add(sprite);
+            setTimeout(function() {
+              sprite.set("dirty", true);
+              sprite.play();
+              //   sprite.stop();
+            }, 100);
+          };
+        }
+
+        (function render() {
+          canvas.renderAll();
+          fabric.util.requestAnimFrame(render);
+        })();
+      })();
+    </script>
+  </body>
+</html>
