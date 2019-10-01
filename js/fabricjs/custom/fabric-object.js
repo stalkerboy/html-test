@@ -5,7 +5,7 @@ var defaultObject = {
   spriteHeight: 64,
   spriteIndex: 0,
   frameTime: 100,
-  direction: 1,
+  // direction: 1,
 
   initialize: function(element, options) {
     options || (options = {});

@@ -25,22 +25,59 @@
           "center";
         fabric.Object.prototype.transparentCorners = false;
 
-        fabric.Sprite.fromURL("/img/child.png", createSprite(2, 2));
+        var characterObject = {};
+        var curCharacter;
+        fabric.util.loadImage("img/child.png", function(img, imgOptions) {
+          var direcionArray = { up: 0, down: 1, right: 2, left: 3 };
+          for (var key in direcionArray) {
+            characterObject[key] = new (fabric.util.createClass(fabric.Image, {
+              direction: direcionArray[key],
+              ...defaultObject
+            }))(img, imgOptions);
+          }
 
-        function createSprite(i, j) {
-          return function(sprite) {
-            sprite.set({
-              left: i * 100 + 50,
-              top: j * 100 + 50,
-              angle: 0
-            });
-            canvas.add(sprite);
-            setTimeout(function() {
-              sprite.set("dirty", true);
-              sprite.play();
-              //   sprite.stop();
-            }, 100);
-          };
+          curCharacter = new (fabric.util.createClass(fabric.Image, {
+            direction: 1,
+            ...defaultObject
+          }))(img, imgOptions);
+          createSprite(curCharacter);
+        });
+
+        canvas.on("mouse:down", function(opt) {
+          var diffx = opt.pointer.x - curCharacter.left;
+          var diffy = opt.pointer.y - curCharacter.top;
+          diffx = diffx > 0 ? diffx : -diffx;
+          diffy = diffy > 0 ? diffy : -diffy;
+          var direction;
+          if (diffx > diffy) {
+            direction = opt.pointer.x < curCharacter.left ? "left" : "right";
+          } else {
+            direction = opt.pointer.y < curCharacter.top ? "up" : "down";
+          }
+          curCharacter.spriteImages = characterObject[direction].spriteImages;
+
+          curCharacter.animate("left", opt.pointer.x, {
+            duration: 1000,
+            onChange: canvas.renderAll.bind(canvas)
+          });
+          curCharacter.animate("top", opt.pointer.y, {
+            duration: 1000,
+            onChange: canvas.renderAll.bind(canvas)
+          });
+        });
+
+        function createSprite(sprite) {
+          sprite.set({
+            left: 2 * 100 + 50,
+            top: 2 * 100 + 50,
+            angle: 0
+          });
+          canvas.add(sprite);
+          setTimeout(function() {
+            sprite.set("dirty", true);
+            sprite.play();
+            //   sprite.stop();
+          }, 100);
         }
 
         (function render() {
