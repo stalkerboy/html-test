@@ -1,86 +1,32 @@
-fabric.Sprite = fabric.util.createClass(fabric.Image, {
-  type: "sprite",
-
-  spriteWidth: 32,
-  spriteHeight: 64,
-  spriteIndex: 0,
-  frameTime: 100,
-  direction: 1,
-
-  initialize: function(element, options) {
-    options || (options = {});
-
-    options.width = this.spriteWidth;
-    options.height = this.spriteHeight;
-
-    this.callSuper("initialize", element, options);
-
-    this.createTmpCanvas();
-    this.createSpriteImages();
+var Asset = {
+  character: null,
+  characterDirSP: [],
+  defaultSPOption: {},
+  createSprite: function(img, spriteOption) {
+    var createFun = !!spriteOption
+      ? fabric.util.createClass(fabric.Image, spriteOption)
+      : fabric.util.createClass(fabric.Image, this.defaultSPOption);
+    return new createFun(img);
   },
 
-  createTmpCanvas: function() {
-    this.tmpCanvasEl = fabric.util.createCanvasElement();
-    this.tmpCanvasEl.width = this.spriteWidth || this.width;
-    this.tmpCanvasEl.height = this.spriteHeight || this.height;
-  },
-
-  createSpriteImages: function() {
-    this.spriteImages = [];
-    direction = this.direction;
-
-    var steps = this._element.width / this.spriteWidth;
-    for (var i = 0; i < steps; i++) {
-      this.createSpriteImage(i, direction);
+  loadSP: function(img) {
+    var direcionArray = { up: 0, down: 1, right: 2, left: 3 };
+    console.log(this.createSprite);
+    for (var key in direcionArray) {
+      var tmpFabricObject = this.createSprite(img, {
+        direction: direcionArray[key],
+        ...this.defaultSPOption
+      });
+      console.log(tmpFabricObject.spriteImages);
+      this.characterDirSP[key] = tmpFabricObject.spriteImages;
     }
+    this.character = this.createSprite(img, {
+      direction: direcionArray["down"],
+      ...this.defaultSPOption
+    });
+    console.log(this.character);
   },
-
-  createSpriteImage: function(i, direction) {
-    var tmpCtx = this.tmpCanvasEl.getContext("2d");
-    tmpCtx.clearRect(0, 0, this.tmpCanvasEl.width, this.tmpCanvasEl.height);
-    tmpCtx.drawImage(
-      this._element,
-      -i * this.spriteWidth,
-      -direction * this.spriteHeight
-    );
-
-    var dataURL = this.tmpCanvasEl.toDataURL("image/png");
-    var tmpImg = fabric.util.createImage();
-
-    tmpImg.src = dataURL;
-
-    this.spriteImages.push(tmpImg);
-  },
-
-  _render: function(ctx) {
-    ctx.drawImage(
-      this.spriteImages[this.spriteIndex],
-      -this.width / 2,
-      -this.height / 2
-    );
-  },
-
-  play: function() {
-    var _this = this;
-    this.animInterval = setInterval(function() {
-      _this.onPlay && _this.onPlay();
-      _this.dirty = true;
-      _this.spriteIndex++;
-      if (_this.spriteIndex === _this.spriteImages.length) {
-        _this.spriteIndex = 0;
-      }
-    }, this.frameTime);
-  },
-
-  stop: function() {
-    clearInterval(this.animInterval);
+  load: function() {
+    fabric.util.loadImage("img/child.png", this.loadSP);
   }
-});
-
-fabric.Sprite.fromURL = function(url, callback, imgOptions) {
-  fabric.util.loadImage(url, function(img) {
-    callback(new fabric.Sprite(img, imgOptions));
-  });
 };
-
-fabric.Sprite.async = true;

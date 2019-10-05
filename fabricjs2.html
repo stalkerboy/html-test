@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Page Title</title>
+  </head>
+  <body>
+    <h1>fabricjs</h1>
+    <canvas
+      id="c"
+      width="600"
+      height="500"
+      class="lower-canvas"
+      style="position: absolute; width: 600px; height: 500px; left: 0px; top: 0px; touch-action: none; user-select: none;"
+    ></canvas>
+    <script type="text/javascript" src="js/fabricjs/fabric.min.js"></script>
+    <script
+      type="text/javascript"
+      src="js/fabricjs/custom/default-sprite.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="js/fabricjs/custom/default-object.js"
+    ></script>
+    <script>
+      (function() {
+        var canvas = (this.__canvas = new fabric.Canvas("c"));
+        fabric.Object.prototype.originX = fabric.Object.prototype.originY =
+          "center";
+        fabric.Object.prototype.transparentCorners = false;
+
+        var curCharacter;
+
+        var charObject = { ...defaultObject };
+        var charDirectionSprite = {};
+
+        function createFabricSprite(img, direction) {
+          var createFun = fabric.util.createClass(fabric.Image, {
+            direction: direction,
+            ...defaultSprite
+          });
+          return new createFun(img);
+        }
+
+        fabric.util.loadImage("img/child.png", function(img, imgOptions) {
+          var direcionArray = { up: 0, down: 1, right: 2, left: 3 };
+          for (var key in direcionArray) {
+            var tmpFabricObject = createFabricSprite(img, direcionArray[key]);
+            charDirectionSprite[key] = tmpFabricObject.spriteImages;
+          }
+
+          charObject.sprite = createFabricSprite(img, 1);
+          createSprite(charObject.sprite);
+        });
+
+        canvas.on("mouse:down", function(opt) {
+          var pointer = {
+            x: opt.pointer.x,
+            y: canvas.height - opt.pointer.y
+          };
+          charObject.changeDirection(pointer);
+          charObject.sprite.spriteImages =
+            charDirectionSprite[charObject.direction];
+
+          charObject.sprite.animate("left", opt.pointer.x, {
+            duration: 1000,
+            onChange: canvas.renderAll.bind(canvas)
+          });
+          charObject.sprite.animate("top", opt.pointer.y, {
+            duration: 1000,
+            onChange: canvas.renderAll.bind(canvas)
+          });
+        });
+
+        function createSprite(sprite) {
+          sprite.set({
+            left: 2 * 100 + 50,
+            top: 2 * 100 + 50,
+            angle: 0
+          });
+          canvas.add(sprite);
+          setTimeout(function() {
+            sprite.set("dirty ", true);
+            sprite.play();
+            //   sprite.stop();
+          }, 100);
+        }
+
+        (function render() {
+          canvas.renderAll();
+          fabric.util.requestAnimFrame(render);
+        })();
+      })();
+    </script>
+  </body>
+</html>
